@@ -1,14 +1,9 @@
-import { FlatCompat } from '@eslint/eslintrc';
-import js from '@eslint/js';
-import tsParser from '@typescript-eslint/parser';
-import { fixupConfigRules, fixupPluginRules } from '@eslint/compat';
-import _import from 'eslint-plugin-import';
-import globals from 'globals';
-import { dirname } from 'path';
-import { fileURLToPath } from 'url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+const { FlatCompat } = require('@eslint/eslintrc');
+const js = require('@eslint/js');
+const tsParser = require('@typescript-eslint/parser');
+const { fixupConfigRules, fixupPluginRules } = require('@eslint/compat');
+const _import = require('eslint-plugin-import');
+const globals = require('globals');
 
 const compat = new FlatCompat({
   baseDirectory: __dirname,
@@ -16,7 +11,7 @@ const compat = new FlatCompat({
   allConfig: js.configs.all,
 });
 
-export default [
+module.exports = [
   {
     ignores: ['node_modules/**', 'dist/**'],
   },
