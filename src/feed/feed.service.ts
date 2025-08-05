@@ -20,3 +20,7 @@ export async function updateById(id: string, data: Partial<IFeed>) {
 export async function deleteById(id: string) {
   return Feed.findByIdAndDelete(id);
 }
+
+export async function getTopFeedsBySource(source: string, limit = 5): Promise<IFeed[]> {
+  return Feed.find({ source }).sort({ publicationDate: -1 }).limit(limit).exec();
+}
