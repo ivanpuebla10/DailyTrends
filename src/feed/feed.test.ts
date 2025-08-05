@@ -22,7 +22,7 @@ const DATA: Omit<IFeed, '_id' | 'id'>[] = [
     title: 'First feed',
     summary: 'Summary not too long',
     author: 'Author One',
-    source: 'Test Source',
+    source: 'El País',
     url: 'https://testweb.com/data1',
     publicationDate: new Date().toISOString(),
     creationDate: new Date(),
@@ -32,7 +32,7 @@ const DATA: Omit<IFeed, '_id' | 'id'>[] = [
     title: 'Feed 1',
     summary: 'Summary 1',
     author: 'Author 1',
-    source: 'Source 1',
+    source: 'El País',
     url: 'https://testweb.com/data2',
     publicationDate: new Date().toISOString(),
     creationDate: new Date(),
@@ -42,17 +42,37 @@ const DATA: Omit<IFeed, '_id' | 'id'>[] = [
     title: 'Feed 2',
     summary: 'Summary 2',
     author: 'Author 2',
-    source: 'Source 2',
+    source: 'El País',
     url: 'https://testweb.com/data3',
     publicationDate: new Date().toISOString(),
     creationDate: new Date(),
     imageUrl: 'https://testweb.com/image3.jpg',
   },
   {
+    title: 'Feed 3',
+    summary: 'Summary 3',
+    author: 'Author 3',
+    source: 'El País',
+    url: 'https://testweb.com/data4',
+    publicationDate: new Date().toISOString(),
+    creationDate: new Date(),
+    imageUrl: 'https://testweb.com/image4.jpg',
+  },
+  {
+    title: 'Feed 4',
+    summary: 'Summary 4',
+    author: 'Author 4',
+    source: 'El País',
+    url: 'https://testweb.com/data5',
+    publicationDate: new Date().toISOString(),
+    creationDate: new Date(),
+    imageUrl: 'https://testweb.com/image5.jpg',
+  },
+  {
     title: 'Feed by id',
     summary: 'Summary by id',
     author: 'Author by id',
-    source: 'Source by id',
+    source: 'El Mundo',
     url: 'https://testweb.com/data4',
     publicationDate: new Date().toISOString(),
     creationDate: new Date(),
@@ -62,7 +82,7 @@ const DATA: Omit<IFeed, '_id' | 'id'>[] = [
     title: 'Feed to update',
     summary: 'Summary to update',
     author: 'Author to update',
-    source: 'Source to update',
+    source: 'El Mundo',
     url: 'https://testweb.com/data5',
     publicationDate: new Date().toISOString(),
     creationDate: new Date(),
@@ -72,11 +92,31 @@ const DATA: Omit<IFeed, '_id' | 'id'>[] = [
     title: 'Feed to delete',
     summary: 'Summary to delete',
     author: 'Author to delete',
-    source: 'Source to delete',
+    source: 'El Mundo',
     url: 'https://testweb.com/data6',
     publicationDate: new Date().toISOString(),
     creationDate: new Date(),
     imageUrl: 'https://testweb.com/image6.jpg',
+  },
+  {
+    title: 'Feed 5',
+    summary: 'Summary 5',
+    author: 'Author 5',
+    source: 'El Mundo',
+    url: 'https://testweb.com/data7',
+    publicationDate: new Date().toISOString(),
+    creationDate: new Date(),
+    imageUrl: 'https://testweb.com/image7.jpg',
+  },
+  {
+    title: 'Feed 6',
+    summary: 'Summary 6',
+    author: 'Author 6',
+    source: 'El Mundo',
+    url: 'https://testweb.com/data8',
+    publicationDate: new Date().toISOString(),
+    creationDate: new Date(),
+    imageUrl: 'https://testweb.com/image8.jpg',
   },
 ];
 
@@ -226,6 +266,54 @@ describe('Feed', () => {
       const id = 'invalidId';
 
       await request(app).delete(`/feeds/${id}`).expect(400);
+    });
+  });
+
+  describe('SCRAPING', () => {
+    it('Should execute scraping and respond successfully', async () => {
+      const res = await request(app)
+        .post('/feeds/scrape')
+        .expect('Content-Type', /json/)
+        .expect(200);
+
+      expect(res.body).toEqual({ message: 'Scraping successfully executed' });
+
+      const feeds = await request(app).get('/feeds').expect('Content-Type', /json/).expect(200);
+      const body: IFeed[] = feeds.body;
+
+      expect(Array.isArray(body)).toBe(true);
+      expect(body.length).toBeGreaterThan(0);
+    });
+  });
+
+  describe('TOP 10', () => {
+    beforeEach(async () => {
+      for (const feed of DATA) {
+        await request(app).post('/feeds').send(feed).expect(201);
+      }
+    });
+
+    it('Should return last feeds from El Mundo and El País, ordered by publicationDate', async () => {
+      const res = await request(app).get('/feeds/top10').expect('Content-Type', /json/).expect(200);
+      const body: IFeed[] = res.body;
+
+      expect(Array.isArray(body)).toBe(true);
+
+      const sources = new Set(body.map((feed) => feed.source));
+      expect(sources.has('El País')).toBe(true);
+      expect(sources.has('El Mundo')).toBe(true);
+      expect([...sources].every((source) => ['El País', 'El Mundo'].includes(source))).toBe(true);
+
+      for (const source of ['El País', 'El Mundo']) {
+        const feedsBySource = body.filter((feed) => feed.source === source);
+        expect(feedsBySource.length).toBe(5);
+
+        for (let i = 1; i < feedsBySource.length; i++) {
+          const prevDate = new Date(feedsBySource[i - 1].publicationDate).getTime();
+          const currDate = new Date(feedsBySource[i].publicationDate).getTime();
+          expect(prevDate).toBeGreaterThanOrEqual(currDate);
+        }
+      }
     });
   });
 });

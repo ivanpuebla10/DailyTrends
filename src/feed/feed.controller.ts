@@ -1,6 +1,9 @@
 import { Request, Response, NextFunction } from 'express';
 
 import * as feedService from './feed.service';
+import { FeedScraperService } from './feed.scraper.service';
+
+const scraperService = new FeedScraperService();
 
 export async function create(req: Request, res: Response, next: NextFunction) {
   try {
@@ -53,5 +56,28 @@ export async function deleteById(req: Request, res: Response, next: NextFunction
     return res.status(204).send();
   } catch (error) {
     return next(error);
+  }
+}
+
+export async function scrapeFeeds(req: Request, res: Response, next: NextFunction) {
+  try {
+    await scraperService.scrapeAndSaveAll();
+    res.status(200).json({ message: 'Scraping successfully executed' });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function getTopFeeds(req: Request, res: Response, next: NextFunction) {
+  try {
+    const sources = ['El País', 'El Mundo'];
+    const result = await Promise.all(
+      sources.map((source) => feedService.getTopFeedsBySource(source, 5)),
+    );
+    const topFeeds = result.flat();
+
+    res.status(200).json(topFeeds);
+  } catch (error) {
+    next(error);
   }
 }
