@@ -2,7 +2,7 @@ import * as cheerio from 'cheerio';
 
 import { ElMundoScraper } from './elmundo.scraper';
 
-describe('elmundo.scraper', () => {
+describe('ElMundoScraper', () => {
   let scraper: ElMundoScraper;
 
   beforeEach(() => {

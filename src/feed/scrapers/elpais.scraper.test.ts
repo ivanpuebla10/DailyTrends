@@ -2,7 +2,7 @@ import * as cheerio from 'cheerio';
 
 import { ElPaisScraper } from './elpais.scraper';
 
-describe('elpais.scraper', () => {
+describe('ElPaisScraper', () => {
   let scraper: ElPaisScraper;
 
   beforeEach(() => {
