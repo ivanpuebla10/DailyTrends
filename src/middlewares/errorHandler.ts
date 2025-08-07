@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { z, ZodError } from 'zod';
+import { ZodError, ZodIssue } from 'zod';
 
 import logger from '../logger';
 
@@ -11,8 +11,13 @@ export function errorHandler(err: unknown, req: Request, res: Response, _next: N
   logger.error(err);
 
   if (err instanceof ZodError) {
-    const treeifiedError = z.treeifyError(err);
-    return res.status(400).json({ errors: treeifiedError });
+    const formattedErrors = err.issues.reduce<Record<string, string>>((acc, curr: ZodIssue) => {
+      const path = curr.path.join('.') || 'root';
+      acc[path] = curr.message;
+      return acc;
+    }, {});
+
+    return res.status(400).json({ errors: formattedErrors });
   }
 
   const error = err as HttpError;

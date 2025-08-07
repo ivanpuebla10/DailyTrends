@@ -1,8 +1,13 @@
 import mongoose from 'mongoose';
 import request from 'supertest';
 import { MongoMemoryServer } from 'mongodb-memory-server';
+import { Request, Response, NextFunction } from 'express';
 
 import app from '../app';
+
+jest.mock('../middlewares/authenticate', () => ({
+  authenticate: (_req: Request, _res: Response, next: NextFunction) => next(),
+}));
 
 interface IFeed {
   _id: string;
@@ -144,15 +149,12 @@ describe('Feed', () => {
   describe('CREATE', () => {
     it('Should create a feed with correct data', async () => {
       const newFeed: Omit<IFeed, '_id' | 'id'> = DATA[0];
-      const res = await request(app)
-        .post('/feeds')
-        .send(newFeed)
-        .expect('Content-Type', /json/)
-        .expect(201);
+      const res = await request(app).post('/feeds').send(newFeed).expect('Content-Type', /json/);
 
       const body: IFeed = res.body;
 
-      expect(body).toHaveProperty('_id');
+      expect(res.status).toBe(201);
+      expect(body).toHaveProperty('id');
       expect(body.title).toBe(newFeed.title);
       expect(body.summary).toBe(newFeed.summary);
     });
@@ -166,9 +168,9 @@ describe('Feed', () => {
       const res = await request(app)
         .post('/feeds')
         .send(invalidFeed)
-        .expect('Content-Type', /json/)
-        .expect(400);
+        .expect('Content-Type', /json/);
 
+      expect(res.status).toBe(400);
       expect(res.body).toHaveProperty('errors');
     });
   });
@@ -181,9 +183,10 @@ describe('Feed', () => {
       await request(app).post('/feeds').send(feed1);
       await request(app).post('/feeds').send(feed2);
 
-      const res = await request(app).get('/feeds').expect('Content-Type', /json/).expect(200);
+      const res = await request(app).get('/feeds').expect('Content-Type', /json/);
       const body: IFeed[] = res.body;
 
+      expect(res.status).toBe(200);
       expect(Array.isArray(body)).toBe(true);
       expect(body.length).toBeGreaterThanOrEqual(2);
     });
@@ -195,23 +198,26 @@ describe('Feed', () => {
       const { body: newFeed } = await request(app).post('/feeds').send(feed).expect(201);
       const id: string = newFeed.id;
 
-      const res = await request(app).get(`/feeds/${id}`).expect('Content-Type', /json/).expect(200);
+      const res = await request(app).get(`/feeds/${id}`).expect('Content-Type', /json/);
       const body: IFeed = res.body;
 
+      expect(res.status).toBe(200);
       expect(body).toHaveProperty('_id', id);
       expect(body.title).toBe(feed.title);
     });
 
     it('Should return 404 if feed not found', async () => {
       const id = new mongoose.Types.ObjectId();
+      const res = await request(app).get(`/feeds/${id}`);
 
-      await request(app).get(`/feeds/${id}`).expect(404);
+      expect(res.status).toBe(404);
     });
 
     it('Should return 400 if invalid id', async () => {
       const id = 'invalidId';
+      const res = await request(app).get(`/feeds/${id}`);
 
-      await request(app).get(`/feeds/${id}`).expect(400);
+      expect(res.status).toBe(400);
     });
   });
 
@@ -224,24 +230,26 @@ describe('Feed', () => {
       const res = await request(app)
         .put(`/feeds/${id}`)
         .send(updatedData)
-        .expect('Content-Type', /json/)
-        .expect(200);
+        .expect('Content-Type', /json/);
       const body: IFeed = res.body;
 
+      expect(res.status).toBe(200);
       expect(body).toHaveProperty('_id', id);
       expect(body.title).toBe(updatedData.title);
     });
 
     it('Should return 404 with a non-existing id', async () => {
       const id = new mongoose.Types.ObjectId();
+      const res = await request(app).put(`/feeds/${id}`).send({ title: 'Title' });
 
-      await request(app).put(`/feeds/${id}`).send({ title: 'Title' }).expect(404);
+      expect(res.status).toBe(404);
     });
 
     it('Should return 400 if invalid id', async () => {
       const id = 'invalidId';
+      const res = await request(app).put(`/feeds/${id}`);
 
-      await request(app).put(`/feeds/${id}`).expect(400);
+      expect(res.status).toBe(400);
     });
   });
 
@@ -253,34 +261,37 @@ describe('Feed', () => {
 
       await request(app).delete(`/feeds/${id}`).expect(204);
 
-      await request(app).get(`/feeds/${id}`).expect(404);
+      const res = await request(app).get(`/feeds/${id}`);
+
+      expect(res.status).toBe(404);
     });
 
     it('Should return 404 with a non-existing id', async () => {
       const id = new mongoose.Types.ObjectId();
+      const res = await request(app).delete(`/feeds/${id}`);
 
-      await request(app).delete(`/feeds/${id}`).expect(404);
+      expect(res.status).toBe(404);
     });
 
     it('Should return 400 if invalid id', async () => {
       const id = 'invalidId';
+      const res = await request(app).delete(`/feeds/${id}`);
 
-      await request(app).delete(`/feeds/${id}`).expect(400);
+      expect(res.status).toBe(400);
     });
   });
 
   describe('SCRAPING', () => {
     it('Should execute scraping and respond successfully', async () => {
-      const res = await request(app)
-        .post('/feeds/scrape')
-        .expect('Content-Type', /json/)
-        .expect(200);
+      const res = await request(app).post('/feeds/scrape').expect('Content-Type', /json/);
 
+      expect(res.status).toBe(200);
       expect(res.body).toEqual({ message: 'Scraping successfully executed' });
 
-      const feeds = await request(app).get('/feeds').expect('Content-Type', /json/).expect(200);
+      const feeds = await request(app).get('/feeds').expect('Content-Type', /json/);
       const body: IFeed[] = feeds.body;
 
+      expect(feeds.status).toBe(200);
       expect(Array.isArray(body)).toBe(true);
       expect(body.length).toBeGreaterThan(0);
     });
@@ -297,6 +308,7 @@ describe('Feed', () => {
       const res = await request(app).get('/feeds/top10').expect('Content-Type', /json/).expect(200);
       const body: IFeed[] = res.body;
 
+      expect(res.status).toBe(200);
       expect(Array.isArray(body)).toBe(true);
 
       const sources = new Set(body.map((feed) => feed.source));

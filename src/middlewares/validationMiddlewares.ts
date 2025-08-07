@@ -1,8 +1,13 @@
 import { Request, Response, NextFunction } from 'express';
-import { z, ZodType, ZodError } from 'zod';
+import { ZodType, ZodError, ZodIssue } from 'zod';
 
 function formatZodError(error: ZodError) {
-  return z.treeifyError(error);
+  const formattedErrors = error.issues.reduce<Record<string, string>>((acc, curr: ZodIssue) => {
+    const path = curr.path.join('.') || 'root';
+    acc[path] = curr.message;
+    return acc;
+  }, {});
+  return formattedErrors;
 }
 
 type StringRecord = Record<string, string>;

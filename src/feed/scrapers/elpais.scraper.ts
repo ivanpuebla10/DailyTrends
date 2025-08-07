@@ -8,13 +8,18 @@ export class ElPaisScraper extends FeedScraper {
   source = 'El País';
   homepageUrl = 'https://elpais.com/';
 
-  private extractDataFromUrl(url: string): { id: string; publicationDate: Date } {
+  private extractDataFromUrl(url: string, title: string): { id: string; publicationDate: Date } {
     const urlCleaned = url.split('?')[0];
     const lastSegment = urlCleaned.substring(urlCleaned.lastIndexOf('/') + 1);
     const feedId = lastSegment.replace('.html', '');
-    const id = feedId
-      ? crypto.createHash('sha256').update(feedId).digest('hex').substring(0, 24)
-      : crypto.randomUUID();
+    let id: string;
+    if (feedId) {
+      id = crypto.createHash('sha256').update(feedId).digest('hex').substring(0, 24);
+    } else {
+      const base = title.trim();
+      id = crypto.createHash('sha256').update(base).digest('hex').substring(0, 24);
+    }
+
     const date = url.match(/(\d{4}-\d{2}-\d{2})/);
     const publicationDate = date ? new Date(date[1]) : new Date();
 
@@ -33,7 +38,7 @@ export class ElPaisScraper extends FeedScraper {
       const imgEl = el.find('figure img');
       const imageUrl = imgEl.attr('src') ?? '';
       if (title && url) {
-        const { id, publicationDate } = this.extractDataFromUrl(url);
+        const { id, publicationDate } = this.extractDataFromUrl(url, title);
         items.push({
           id,
           title,

@@ -5,6 +5,8 @@ import { FeedScraper, FeedData } from './feed.scraper';
 
 jest.mock('axios');
 
+const mockedAxios = axios as jest.Mocked<typeof axios>;
+
 class TestScrapper extends FeedScraper {
   source = 'Test';
   homepageUrl = 'https://test.com';
@@ -24,13 +26,19 @@ class TestScrapper extends FeedScraper {
 }
 
 describe('FeedScraper', () => {
-  it('fetchWebsiteData returns result of parseHome', async () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('fetchWebsiteData should return result of parseHome', async () => {
     const html = '<html></html>';
-    (axios.get as jest.Mock).mockResolvedValue({ data: Buffer.from(html, 'utf-8') });
+
+    mockedAxios.get.mockResolvedValue({ data: Buffer.from(html, 'utf-8') });
 
     const scraper = new TestScrapper();
 
     const feeds = await scraper.fetchWebsiteData();
+
     expect(Array.isArray(feeds)).toBe(true);
     expect(feeds.length).toBe(1);
     expect(feeds[0].id).toBe('Id1');
