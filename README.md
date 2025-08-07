@@ -56,7 +56,7 @@ DELETE /feed/:id → Eliminar un feed por su ID (requiere autenticación)
 
 ## Diagrama
 
-![Architecture](./assets/arquitecture.png)
+![Architecture](./assets/architecture.png)
 
 La aplicación estará disponible por defecto en `http://localhost:3000`
 La documentacion estara disponible por defecto en `http://localhost:3000/api-docs/`
