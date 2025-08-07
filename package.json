@@ -28,6 +28,8 @@
     "jsonwebtoken": "^9.0.2",
     "mongodb-memory-server": "^10.1.4",
     "mongoose": "^8.17.0",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1",
     "winston": "^3.17.0",
     "zod": "^4.0.14"
   },
@@ -42,6 +44,8 @@
     "@types/mongoose": "^5.11.97",
     "@types/node": "^24.1.0",
     "@types/supertest": "^6.0.3",
+    "@types/swagger-jsdoc": "^6.0.4",
+    "@types/swagger-ui-express": "^4.1.8",
     "@types/winston": "^2.4.4",
     "@typescript-eslint/eslint-plugin": "^8.38.0",
     "@typescript-eslint/parser": "^8.38.0",

@@ -10,15 +10,15 @@ export async function getAll() {
 }
 
 export async function getById(id: string) {
-  return Feed.findById(id);
+  return Feed.findOne({ id });
 }
 
 export async function updateById(id: string, data: Partial<IFeed>) {
-  return Feed.findByIdAndUpdate(id, data, { new: true });
+  return Feed.findOneAndUpdate({ id }, data, { new: true });
 }
 
 export async function deleteById(id: string) {
-  return Feed.findByIdAndDelete(id);
+  return Feed.findOneAndDelete({ id });
 }
 
 export async function getTopFeedsBySource(source: string, limit = 5): Promise<IFeed[]> {

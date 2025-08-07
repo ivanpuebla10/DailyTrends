@@ -6,9 +6,11 @@ import cors from 'cors';
 import helmet from 'helmet';
 import createRateLimit from 'express-rate-limit';
 
+import { setupSwagger } from './swagger';
 import router from './router';
 import logger from './logger';
 import { errorHandler } from './middlewares/errorHandler';
+import { requestLogger } from './middlewares/requestLogger';
 
 const app = express();
 
@@ -33,9 +35,11 @@ if (process.env.NODE_ENV !== 'test') {
       logger.error('Error trying to connect to the database:', err);
     });
 }
+app.use(requestLogger);
 
 app.use(router);
 
+setupSwagger(app);
 app.use(errorHandler);
 
 export default app;

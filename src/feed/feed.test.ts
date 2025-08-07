@@ -154,7 +154,7 @@ describe('Feed', () => {
       const body: IFeed = res.body;
 
       expect(res.status).toBe(201);
-      expect(body).toHaveProperty('_id');
+      expect(body).toHaveProperty('id');
       expect(body.title).toBe(newFeed.title);
       expect(body.summary).toBe(newFeed.summary);
     });

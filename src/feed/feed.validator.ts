@@ -4,6 +4,7 @@ export const FeedSchema = z.object({
   id: z.string().optional(),
   title: z.string(),
   summary: z.string().optional(),
+  author: z.string().optional(),
   source: z.string(),
   url: z.string(),
   imageUrl: z.string().optional(),

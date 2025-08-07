@@ -11,7 +11,8 @@ describe('ElPaisScraper', () => {
 
   it('Should extract valid id and valid publicationDate from URL', () => {
     const url = 'https://elpais.com/2025/08/04/test-feed.html?param=1';
-    const { id, publicationDate } = scraper['extractDataFromUrl'](url);
+    const title = 'Test feed title';
+    const { id, publicationDate } = scraper['extractDataFromUrl'](url, title);
 
     expect(id).toHaveLength(24);
     expect(publicationDate).toBeInstanceOf(Date);
